@@ -1203,8 +1203,8 @@ void addSingleLightJson(aJsonObject* root, int numberOfTheLight, LightHandler *l
   String lightNumber = (String) (numberOfTheLight + 1);
   String lightName = lightHandler->getFriendlyName(numberOfTheLight);
   
-  aJson.addStringToObject(root, "manufacturername", "OpenSource"); // type of lamp (all "Extended colour light" for now)
-  aJson.addStringToObject(root, "modelid", "LST001"); // the model number
+  aJson.addStringToObject(root, "manufacturername", "Philips"); // type of lamp (all "Extended colour light" for now)
+  aJson.addStringToObject(root, "modelid", "LCT015"); // the model number
   aJson.addStringToObject(root, "name",  lightName.c_str()); // // the name as set through the web UI or app
   aJsonObject *state;
   aJson.addItemToObject(root, "state", state = aJson.createObject());
@@ -1221,7 +1221,7 @@ void addSingleLightJson(aJsonObject* root, int numberOfTheLight, LightHandler *l
   aJson.addStringToObject(state, "colormode", "hs"); // the current color mode
   aJson.addBooleanToObject(state, "reachable", true); // lamp can be seen by the hub  aJson.addStringToObject(root, "type", "Extended color light"); // type of lamp (all "Extended colour light" for now)
   
-  aJson.addStringToObject(root, "swversion", "0.1"); // type of lamp (all "Extended colour light" for now)
+  aJson.addStringToObject(root, "swversion", "1.46.13_r26312"); // type of lamp (all "Extended colour light" for now)
   if (info.bulbType == HueBulbType::DIMMABLE_LIGHT) {
     aJson.addStringToObject(root, "type", "Dimmable light");
   } else {
@@ -1235,8 +1235,7 @@ void addSingleLightJson(aJsonObject* root, int numberOfTheLight, LightHandler *l
 void addLightJson(aJsonObject* root, int numberOfTheLight, LightHandler *lightHandler) {
   if (!lightHandler) 
     return;
-
-  
+ 
   String lightNumber = (String) (numberOfTheLight + 1);
   String lightName = lightHandler->getFriendlyName(numberOfTheLight);
   aJsonObject *light;
@@ -1249,11 +1248,11 @@ void addLightJson(aJsonObject* root, int numberOfTheLight, LightHandler *lightHa
     aJson.addStringToObject(light, "type", "Extended color light");
   }
   
-  aJson.addStringToObject(light, "manufacturername", "OpenSource"); // type of lamp (all "Extended colour light" for now)
-  aJson.addStringToObject(light, "swversion", "0.1");
+  aJson.addStringToObject(light, "manufacturername", "Philips"); // type of lamp (all "Extended colour light" for now)
+  aJson.addStringToObject(light, "swversion", "1.46.13_r26312");
   aJson.addStringToObject(light, "name",  lightName.c_str()); // // the name as set through the web UI or app
   aJson.addStringToObject(light, "uniqueid",  (macString + "-" + (String) (numberOfTheLight + 1)).c_str());
-  aJson.addStringToObject(light, "modelid", "LST001"); // the model number
+  aJson.addStringToObject(light, "modelid", "LCT015"); // the model number
   
   aJsonObject *state;
   aJson.addItemToObject(light, "state", state = aJson.createObject());
@@ -1294,8 +1293,9 @@ static String format2Digits(int num) {
 
 void addConfigJson(aJsonObject *root)
 {
-  aJson.addStringToObject(root, "name", "hue emulator");
-  aJson.addStringToObject(root, "swversion", "81012917");
+  aJson.addStringToObject(root, "name", "Philips hue");
+  aJson.addStringToObject(root, "modelid", "BSB002");
+  aJson.addStringToObject(root, "swversion", "1809121051");
   aJson.addStringToObject(root, "bridgeid", bridgeIDString.c_str());
   aJson.addBooleanToObject(root, "portalservices", false);
   aJson.addBooleanToObject(root, "linkbutton", true);
@@ -1304,7 +1304,7 @@ void addConfigJson(aJsonObject *root)
   aJson.addStringToObject(root, "ipaddress", ipString.c_str());
   aJson.addStringToObject(root, "netmask", netmaskString.c_str());
   aJson.addStringToObject(root, "gateway", gatewayString.c_str());
-  aJson.addStringToObject(root, "apiversion", "1.3.0");
+  aJson.addStringToObject(root, "apiversion", "1.24.0");
   if (timeStatus() == timeSet) {
     time_t moment = now();
     String dts = String(year(moment));

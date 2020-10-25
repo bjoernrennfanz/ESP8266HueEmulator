@@ -7,31 +7,89 @@
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
+#include <WiFiManager.h>
 #include <TimeLib.h>
 #include <NtpClientLib.h>
 #include <NeoPixelBus.h>
 #include <NeoPixelAnimator.h> // instead of NeoPixelAnimator branch
+
+#define MAX_LIGHT_HANDLERS 1
+#define lightName "Hue RGB Light" // Light name, change this if you se multiple lights for easy identification
+
 #include "LightService.h"
 
 // these are only used in LightHandler.cpp, but it seems that the IDE only scans the .ino and real libraries for dependencies
 #include "SSDP.h"
 #include <aJSON.h> // Replace avm/pgmspace.h with pgmspace.h there and set #define PRINT_BUFFER_LEN 4096 ################# IMPORTANT
 
-#include "/secrets.h" // Delete this line and populate the following
-//const char* ssid = "********";
-//const char* password = "********";
-
 RgbColor red = RgbColor(COLOR_SATURATION, 0, 0);
 RgbColor green = RgbColor(0, COLOR_SATURATION, 0);
 RgbColor white = RgbColor(COLOR_SATURATION);
 RgbColor black = RgbColor(0);
 
+// Uncomment to use WS2812 light strips 
+// instead of RGB PWM
+//#define USE_WS2812_STRIP
+#if defined(USE_WS2812_STRIP)
 // Settings for the NeoPixels
 #define NUM_PIXELS_PER_LIGHT 10 // How many physical LEDs per emulated bulb
-
 #define pixelCount 30
+
 #define pixelPin 2 // Strip is attached to GPIO2 on ESP-01
 NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1Ws2812xMethod> strip(MAX_LIGHT_HANDLERS * NUM_PIXELS_PER_LIGHT, pixelPin);
+#else
+// Defines for PWM Mode
+#define NUM_PIXELS_PER_LIGHT 1
+#define PWM_CHANNELS 3
+#define pixelCount 1
+
+class RGBStripe {
+public:
+  RGBStripe(uint8_t pinRed, uint8_t pinGreen, uint8_t pinBlue) {
+    _pins[0] = pinRed;
+    _pins[1] = pinGreen;
+    _pins[2] = pinBlue;
+  }
+
+  void Begin()
+  {
+    // Setup pins for output
+    for (uint8_t pin = 0; pin < PWM_CHANNELS; pin++) {
+      pinMode(_pins[pin], OUTPUT);
+      analogWrite(_pins[pin], 0);
+    }
+  }
+  
+  void SetPixelColor(uint16_t indexPixel, RgbColor updatedColor)
+  {
+    // Store current color value
+    _color[0] = updatedColor.R;
+    _color[1] = updatedColor.G;
+    _color[2] = updatedColor.B;
+
+    // Update outputs
+    for (uint8_t pin = 0; pin < PWM_CHANNELS; pin++) {
+      analogWrite(_pins[pin], (int)(_color[pin] * 4.0));
+    }
+  }
+
+  void Show()
+  {
+  }
+
+  RgbColor GetPixelColor(uint16_t indexPixel) const
+  {
+    RgbColor result(_color[0], _color[1], _color[2]);
+    return result;
+  }
+
+private:
+  uint8_t _pins[PWM_CHANNELS];
+  uint8_t _color[PWM_CHANNELS];
+};
+
+RGBStripe strip(12, 14, 13); // red (D6), green (D5), blue (D7)
+#endif
 NeoPixelAnimator animator(MAX_LIGHT_HANDLERS * NUM_PIXELS_PER_LIGHT, NEO_MILLISECONDS); // NeoPixel animation management object
 LightServiceClass LightService;
 
@@ -123,9 +181,9 @@ void setup() {
   delay(120); // Apparently needed to make the first few pixels animate correctly
   Serial.begin(115200);
 
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  infoLight(white);
+  WiFiManager wifiManager;
+  wifiManager.setConfigPortalTimeout(120);
+  wifiManager.autoConnect(lightName);
 
   while (WiFi.status() != WL_CONNECTED) {
     infoLight(red);
@@ -202,7 +260,7 @@ void infoLight(RgbColor color) {
   {
     strip.SetPixelColor(i, color);
     strip.Show();
-    delay(10);
+    delay(250);
     strip.SetPixelColor(i, black);
     strip.Show();
   }
