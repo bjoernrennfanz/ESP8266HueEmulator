@@ -11,6 +11,7 @@ install:
   - git clone -o 3c22f2f https://github.com/gmag11/NtpClient
   - git clone -o b592ac6 https://github.com/me-no-dev/ESPAsyncUDP
   - git clone -o ec56354 https://github.com/interactive-matter/aJson
+  - git clone -o cadf6b4 https://github.com/tablatronix/WiFiManager
   - sed -i -e 's|#define PRINT_BUFFER_LEN 256|#define PRINT_BUFFER_LEN 4096|g'  aJson/aJSON.h
   - cd aJson
   - curl -OSLs https://gitlab.com/xarduino/lightsw/raw/2424e3a9348e7144373311af132ced38f14489ba/patch/ajson-void-flush.patch
@@ -18,6 +19,4 @@ install:
   - rm ajson-void-flush.patch
   - cd $TRAVIS_BUILD_DIR
 script:
-  - sed -i -e 's|#include "/secrets.h"|//#include "/secrets.h"|g' ESP8266HueEmulator/ESP8266HueEmulator.ino
-  - sed -i -e 's|//const char|const char|g' ESP8266HueEmulator/ESP8266HueEmulator.ino
   - build_platform esp8266
